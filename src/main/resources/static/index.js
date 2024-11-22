@@ -37,7 +37,7 @@ new Vue({
                 .catch(error => {
                     console.error('에러 발생:', error)
                     alert('폼 제출 실패')
-                });
+                })
             this.formData = {
                 file: '',
                 node: '',
@@ -52,4 +52,4 @@ new Vue({
             this.formData.args.splice(index, 1)
         }
     }
-});
+})

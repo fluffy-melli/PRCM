@@ -3,10 +3,10 @@ plugins {
     kotlin("jvm") version "2.0.21"
     kotlin("plugin.spring") version "1.8.0"
     id("org.springframework.boot") version "3.1.0"
-    id("com.github.johnrengelman.shadow") version "8.0.0"
+    id("com.github.johnrengelman.shadow") version "8.1.0"
 }
 
-group = "prcm.kotlin"
+group = "net.shibadogs"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -25,13 +25,19 @@ dependencies {
 }
 
 application {
-    mainClass.set("prcm.kotlin.MainKt")
+    mainClass.set("net.shibadogs.prcm.MainKt")
 }
 
-tasks.jar {
-    archiveBaseName.set("prcm")
-    manifest {
-        attributes["Main-Class"] = "prcm.kotlin.MainKt"
+tasks {
+    shadowJar {
+        archiveBaseName.set("prcm")
+        manifest {
+            attributes["Main-Class"] = "net.shibadogs.prcm.MainKt"
+        }
+    }
+
+    build {
+        dependsOn(shadowJar)
     }
 }
 
