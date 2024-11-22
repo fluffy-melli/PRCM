@@ -10,7 +10,8 @@ data class Status (
     val err: StringBuilder = StringBuilder(),
     var errCount: Int = 0,
     var restartCount: Int = 0,
-    var exit: Boolean = false,
+    var rootExit: Boolean = false,
+    var exit: Boolean = true,
     var exitCode: Int = -1,
 )
 
@@ -51,9 +52,4 @@ data class Builder (
     val node: Node,
     val processInfo: ProcessINFO,
     val status: Status,
-)
-
-data class Processing (
-    val node: Builder,
-    var info: Process
 )

@@ -1,7 +1,8 @@
 package net.shibadogs.prcm.command
 
 data class List (
-    var version: Boolean = false
+    var version: Boolean = false,
+    var onloads: Boolean = false
 )
 
 fun command(args: Array<String>) : List {
@@ -14,8 +15,18 @@ fun command(args: Array<String>) : List {
             l == "-version" ||
             l == "--v" ||
             l == "--version"
-            ) {
+        ) {
             co.version = true
+        }
+        if (
+            l == "l" ||
+            l == "load" ||
+            l == "-l" ||
+            l == "-load" ||
+            l == "--l" ||
+            l == "--load"
+        ) {
+            co.onloads = true
         }
     }
     return co

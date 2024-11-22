@@ -6,8 +6,8 @@ new Vue({
             newnode: false
         },
         node: {
-            config: [],
-            runing: []
+            config: null,
+            running: null
         },
         formData: {
             file: '',
@@ -18,13 +18,36 @@ new Vue({
     },
     mounted() {
         this.loadnodes()
+        setInterval(() => {
+            this.loadnodes()
+        }, 2000)
     },
     methods: {
         async loadnodes() {
             const response1 = await axios.get('/api/get-config')
             this.node.config = response1.data
             const response2 = await axios.get('/api/get-run-node')
-            this.node.runing = response2.data
+            this.node.running = response2.data
+        },
+        async nodestart(id) {
+            const response = await axios.get('/api/node/start/'+id)
+            if (!response.data) {
+                alert("fail")
+                return
+            }
+            this.loadnodes()
+        },
+        async nodestop(id) {
+            const response = await axios.get('/api/node/stop/'+id)
+            if (!response.data) {
+                alert("fail")
+                return
+            }
+            this.loadnodes()
+        },
+        nodechanges() {
+            this.status.node = !this.status.node
+            this.status.newnode = !this.status.newnode
         },
         submitForm() {
             this.formData.file = this.formData.args[0]
@@ -33,10 +56,10 @@ new Vue({
                 .then(response => {
                     console.log('서버 응답:', response.data)
                     alert('폼 제출 성공')
+                    this.loadnodes()
                 })
                 .catch(error => {
-                    console.error('에러 발생:', error)
-                    alert('폼 제출 실패')
+                    alert('fail')
                 })
             this.formData = {
                 file: '',

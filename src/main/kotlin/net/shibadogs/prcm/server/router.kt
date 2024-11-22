@@ -1,30 +1,49 @@
 package net.shibadogs.prcm.server
 
 import net.shibadogs.prcm.process.Builder
+import net.shibadogs.prcm.process.new
+import net.shibadogs.prcm.process.run
+import net.shibadogs.prcm.process.stop
 import net.shibadogs.prcm.save.Config
 import net.shibadogs.prcm.save.loadxml
 import net.shibadogs.prcm.save.savexml
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
-
-var nodelist: MutableList<Builder> = mutableListOf()
+import org.springframework.web.bind.annotation.*
 
 @RestController
 class Router {
     @GetMapping("/api/get-run-node")
-    fun getNode(): List<Builder> {
-        return nodelist.toList()
+    fun getNode(): MutableMap<Int,Builder> {
+        return nodelist
     }
 
     @GetMapping("/api/get-config")
-    fun getConfig(): Array<Config> {
+    fun getConfig(): MutableMap<Int, Config> {
         return loadxml("configs.xml")
     }
 
+    @GetMapping("/api/node/start/{number}")
+    fun startNode(@PathVariable number: Int): Boolean {
+        val loadConfigs = loadxml("configs.xml")
+        if (loadConfigs.getOrElse(number) { null } == null) {
+            return false
+        } else {
+            Thread {
+                run(new(loadConfigs[number]!!))
+            }.start()
+            return true
+        }
+    }
+
+    @GetMapping("/api/node/stop/{number}")
+    fun stopNode(@PathVariable number: Int): Boolean {
+        if (processlist.getOrElse(number) { null } == null) {
+            return false
+        }
+        return stop(nodelist[number]!!)
+    }
+
     @PostMapping("/api/new-config")
-    fun newConfig (@RequestBody body: Map<String, Any>): Array<Config> {
+    fun newConfig (@RequestBody body: Map<String, Any>): MutableMap<Int, Config> {
         val loadConfigs = loadxml("configs.xml")
         val args: List<String> = (body["args"] as? List<*>)?.filterIsInstance<String>() ?: listOf()
         val config = Config(
@@ -34,8 +53,8 @@ class Router {
             body["file"] as String,
             args
         )
-        val updatedConfigs: Array<Config> = loadConfigs + config
-        savexml(updatedConfigs, "configs.xml")
-        return updatedConfigs
+        loadConfigs[loadConfigs.size] = config
+        savexml(loadConfigs, "configs.xml")
+        return loadConfigs
     }
 }

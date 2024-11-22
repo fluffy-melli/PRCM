@@ -16,7 +16,7 @@ data class Config(
     val args: List<String>
 )
 
-fun savexml(configs: Array<Config>, filename: String) {
+fun savexml(configs: MutableMap<Int, Config>, filename: String) {
     try {
         val document: Document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument()
         val root = document.createElement("Configs")
@@ -25,19 +25,19 @@ fun savexml(configs: Array<Config>, filename: String) {
             val configElement = document.createElement("Config")
             root.appendChild(configElement)
             val idElement = document.createElement("id")
-            idElement.appendChild(document.createTextNode(config.id.toString()))
+            idElement.appendChild(document.createTextNode(config.value.id.toString()))
             configElement.appendChild(idElement)
             val nodeElement = document.createElement("node")
-            nodeElement.appendChild(document.createTextNode(config.node))
+            nodeElement.appendChild(document.createTextNode(config.value.node))
             configElement.appendChild(nodeElement)
             val workdirElement = document.createElement("workdir")
-            workdirElement.appendChild(document.createTextNode(config.workdir))
+            workdirElement.appendChild(document.createTextNode(config.value.workdir))
             configElement.appendChild(workdirElement)
             val pathElement = document.createElement("path")
-            pathElement.appendChild(document.createTextNode(config.path))
+            pathElement.appendChild(document.createTextNode(config.value.path))
             configElement.appendChild(pathElement)
             val argsElement = document.createElement("args")
-            for (arg in config.args) {
+            for (arg in config.value.args) {
                 val argElement = document.createElement("arg")
                 argElement.appendChild(document.createTextNode(arg))
                 argsElement.appendChild(argElement)
@@ -53,12 +53,12 @@ fun savexml(configs: Array<Config>, filename: String) {
     }
 }
 
-fun loadxml(filename: String): Array<Config> {
+fun loadxml(filename: String): MutableMap<Int, Config> {
     try {
         val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(File(filename))
         document.documentElement.normalize()
         val configNodes = document.getElementsByTagName("Config")
-        val configs = mutableListOf<Config>()
+        val configs: MutableMap<Int, Config> = mutableMapOf()
         for (i in 0 until configNodes.length) {
             val configElement = configNodes.item(i) as Element
             val id = configElement.getElementsByTagName("id").item(0).textContent.toInt()
@@ -71,10 +71,10 @@ fun loadxml(filename: String): Array<Config> {
                 val argElement = argsNodeList.item(j) as Element
                 args.add(argElement.textContent)
             }
-            configs.add(Config(id, node, workdir, path, args))
+            configs[id] = Config(id, node, workdir, path, args)
         }
-        return configs.toTypedArray()
+        return configs
     } catch (e: Exception) {
-        return emptyArray()
+        return mutableMapOf()
     }
 }

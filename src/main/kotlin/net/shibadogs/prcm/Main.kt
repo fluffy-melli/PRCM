@@ -16,17 +16,18 @@ fun main(args: Array<String>) {
     val command = command(args)
     if (command.version) {
         println("beta 0.0.1")
-    } else {
+    }
+    if (command.onloads) {
         try {
             val loadedConfigs = loadxml("configs.xml")
             if (loadedConfigs.isNotEmpty()) {
                 for (config in loadedConfigs) {
-                    val node = new(config)
-                    nodelist.add(node)
-                    println(nodelist[node.status.id])
+                    val node = new(config.value)
+                    nodelist[config.value.id] = node
                     Thread {
-                        net.shibadogs.prcm.process.run(nodelist[node.status.id])
+                        net.shibadogs.prcm.process.run(nodelist[node.status.id]!!)
                     }.start()
+                    println(nodelist[node.status.id])
                 }
             }
         } catch (e: Exception) {
