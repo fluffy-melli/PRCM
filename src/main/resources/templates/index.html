@@ -1,0 +1,58 @@
+<!-- src/main/resources/static/index.html -->
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>PRCM</title>
+        <link rel="stylesheet" href="style.css">
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    </head>
+    <body>
+    <div id="app">
+        <div v-if="status.newnode">
+            <form @submit.prevent="submitForm">
+                <label for="node">Node:</label>
+                <input type="text" id="node" v-model="formData.node" required>
+                <br><br>
+                <label for="workdir">Workdir:</label>
+                <input type="text" id="workdir" v-model="formData.workdir" required>
+                <br><br>
+                <label>Args:</label>
+                <div v-for="(arg, index) in formData.args" :key="index">
+                    <input type="text" v-model="formData.args[index]" placeholder="인자를 입력하세요" required>
+                    <button type="button" @click="removeArg(index)">제거</button>
+                    <br>
+                </div>
+                <button type="button" @click="addArg">인자 추가</button>
+                <br><br>
+                <button type="submit">전송</button>
+            </form>
+        </div>
+        <div v-if="status.node">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>id</th>
+                        <th>node</th>
+                        <th>filename</th>
+                        <th>pid</th>
+                        <th>restart</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(row, i) in this.node.runing">
+                        <td>{{row.status.id}}</td>
+                        <td>{{row.node.node}}</td>
+                        <td>{{row.node.filepath}}</td>
+                        <td>{{row.processInfo.pid}}</td>
+                        <td>{{row.status.restartCount}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="index.js"></script>
+    </body>
+</html>
