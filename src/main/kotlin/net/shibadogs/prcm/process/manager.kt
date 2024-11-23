@@ -1,6 +1,7 @@
 package net.shibadogs.prcm.process
 
-import net.shibadogs.prcm.server.nodelist
+import net.shibadogs.prcm.server.memoryUsageList
+import net.shibadogs.prcm.server.nodeList
 import net.shibadogs.prcm.server.processlist
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -10,7 +11,6 @@ fun run(processInfo: Builder) : Int {
     if (processlist.getOrElse(processInfo.status.id) { null } != null || !processInfo.status.exit) {
         return 0
     }
-    nodelist[processInfo.status.id] = processInfo
     val processBuilder = ProcessBuilder(processInfo.node.node, processInfo.node.filepath, *processInfo.node.args)
     processBuilder.redirectErrorStream(false)
     val exists: Boolean = processInfo.node.workdir?.exists() ?: false
@@ -32,16 +32,19 @@ fun run(processInfo: Builder) : Int {
             processInfo.status.exit = false
             var line: String?
             val process = processBuilder.start()
+            nodeList[processInfo.status.id] = processInfo
             processlist[processInfo.status.id] = process
+            memoryUsageList[processInfo.status.id] = listOf()
             processInfo.processInfo.pid = PID(process)
-            val standardOutputReader = BufferedReader(InputStreamReader(process.inputStream))
+            val standardOutputReader = BufferedReader(InputStreamReader(process.inputStream, "UTF-8"))
             while (standardOutputReader.readLine().also { line = it } != null) {
                 processInfo.status.out.append(line).append("\n")
             }
-            val errorOutputReader = BufferedReader(InputStreamReader(process.errorStream))
+            val errorOutputReader = BufferedReader(InputStreamReader(process.errorStream, "UTF-8"))
             while (errorOutputReader.readLine().also { line = it } != null) {
                 processInfo.status.err.append(line).append("\n")
             }
+            memoryUsageList[processInfo.status.id]?.plus(MemoryUsage(processInfo.processInfo.pid))
             val exit = process.waitFor()
             processInfo.status.endTime = Instant.now().epochSecond
             processInfo.status.exit = true
@@ -61,8 +64,9 @@ fun stop(processInfo: Builder) : Boolean{
     if (!processInfo.status.exit) {
         processInfo.status.rootExit = true
         processlist[processInfo.status.id]?.destroyForcibly()
+        memoryUsageList.remove(processInfo.status.id)
         processlist.remove(processInfo.status.id)
-        nodelist.remove(processInfo.status.id)
+        nodeList.remove(processInfo.status.id)
         return true
     }
     return false

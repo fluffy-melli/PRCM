@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*
 class Router {
     @GetMapping("/api/get-run-node")
     fun getNode(): MutableMap<Int,Builder> {
-        return nodelist
+        return nodeList
     }
 
     @GetMapping("/api/get-config")
@@ -39,7 +39,15 @@ class Router {
         if (processlist.getOrElse(number) { null } == null) {
             return false
         }
-        return stop(nodelist[number]!!)
+        return stop(nodeList[number]!!)
+    }
+
+    @GetMapping("/api/node/usage/memory/{number}")
+    fun usagememoryNode(@PathVariable number: Int): List<Map<Int, Long>> {
+        if (memoryUsageList.getOrElse(number) { null } == null) {
+            return listOf()
+        }
+        return memoryUsageList[number]!!
     }
 
     @PostMapping("/api/new-config")
