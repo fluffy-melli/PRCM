@@ -1,5 +1,6 @@
 package net.shibadogs.prcm.process
 
+import net.shibadogs.prcm.server.logList
 import net.shibadogs.prcm.server.memoryUsageList
 import net.shibadogs.prcm.server.nodeList
 import net.shibadogs.prcm.server.processlist
@@ -10,6 +11,9 @@ import java.time.Instant
 fun run(processInfo: Builder) : Int {
     if (processlist.getOrElse(processInfo.status.id) { null } != null || !processInfo.status.exit) {
         return 0
+    }
+    if (logList.getOrElse(processInfo.status.id) { null } == null) {
+        logList[processInfo.status.id] = StringBuilder()
     }
     val processBuilder = ProcessBuilder(processInfo.node.node, processInfo.node.filepath, *processInfo.node.args)
     processBuilder.redirectErrorStream(false)
@@ -38,11 +42,11 @@ fun run(processInfo: Builder) : Int {
             processInfo.processInfo.pid = PID(process)
             val standardOutputReader = BufferedReader(InputStreamReader(process.inputStream, "UTF-8"))
             while (standardOutputReader.readLine().also { line = it } != null) {
-                processInfo.status.out.append(line).append("\n")
+                logList[processInfo.status.id]?.append(line)?.append("\n")
             }
             val errorOutputReader = BufferedReader(InputStreamReader(process.errorStream, "UTF-8"))
             while (errorOutputReader.readLine().also { line = it } != null) {
-                processInfo.status.err.append(line).append("\n")
+                logList[processInfo.status.id]?.append(line)?.append("\n")
             }
             memoryUsageList[processInfo.status.id]?.plus(MemoryUsage(processInfo.processInfo.pid))
             val exit = process.waitFor()
@@ -54,8 +58,11 @@ fun run(processInfo: Builder) : Int {
             }
             processInfo.status.restartCount += 1
         }
+        memoryUsageList.remove(processInfo.status.id)
+        processlist.remove(processInfo.status.id)
+        nodeList.remove(processInfo.status.id)
     } catch (e: Exception) {
-        processInfo.status.err.append(e.printStackTrace()).append("\n")
+        logList[processInfo.status.id]?.append(e.printStackTrace())?.append("\n")
     }
     return processInfo.status.exitCode
 }

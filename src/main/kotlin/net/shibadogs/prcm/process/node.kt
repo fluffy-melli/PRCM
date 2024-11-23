@@ -6,8 +6,6 @@ data class Status (
     val id: Int,
     var startTime: Long = -1,
     var endTime: Long = -1,
-    val out: StringBuilder = StringBuilder(),
-    val err: StringBuilder = StringBuilder(),
     var errCount: Int = 0,
     var restartCount: Int = 0,
     var rootExit: Boolean = false,

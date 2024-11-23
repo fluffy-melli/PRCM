@@ -1,3 +1,5 @@
+Vue.config.devtools = false
+Vue.config.productionTip = false
 new Vue({
     el: '#app',
     data: {
@@ -7,7 +9,9 @@ new Vue({
         },
         node: {
             config: null,
-            running: null
+            running: null,
+            view: 0,
+            log: "",
         },
         formData: {
             file: '',
@@ -28,6 +32,8 @@ new Vue({
             this.node.config = response1.data
             const response2 = await axios.get('/api/get-run-node')
             this.node.running = response2.data
+            const response3 = await axios.get('/api/node/get-log/'+this.node.view)
+            this.node.log = response3.data
         },
         async nodestart(id) {
             const response = await axios.get('/api/node/start/'+id)
@@ -44,6 +50,9 @@ new Vue({
                 return
             }
             this.loadnodes()
+        },
+        view_choice_node(id) {
+            this.node.view = id
         },
         nodechanges() {
             this.status.node = !this.status.node

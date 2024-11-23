@@ -45,11 +45,23 @@ tasks {
         manifest {
             attributes["Main-Class"] = "net.shibadogs.prcm.MainKt"
         }
+
+        from("src/main/resources") {
+            include("**/*.properties")
+        }
     }
 
     build {
         dependsOn(shadowJar)
     }
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
 }
 
 tasks.withType<Test> {

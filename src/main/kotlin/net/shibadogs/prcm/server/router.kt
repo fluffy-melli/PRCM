@@ -21,6 +21,14 @@ class Router {
         return loadxml("configs.xml")
     }
 
+    @GetMapping("/api/node/get-log/{number}")
+    fun getLog(@PathVariable number: Int): StringBuilder {
+        if (logList.getOrElse(number) { null } == null) {
+            return StringBuilder()
+        }
+        return logList[number]!!
+    }
+
     @GetMapping("/api/node/start/{number}")
     fun startNode(@PathVariable number: Int): Boolean {
         val loadConfigs = loadxml("configs.xml")
@@ -43,7 +51,7 @@ class Router {
     }
 
     @GetMapping("/api/node/usage/memory/{number}")
-    fun usagememoryNode(@PathVariable number: Int): List<Map<Int, Long>> {
+    fun usageMemoryNode(@PathVariable number: Int): List<Map<Int, Long>> {
         if (memoryUsageList.getOrElse(number) { null } == null) {
             return listOf()
         }

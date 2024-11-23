@@ -11,43 +11,74 @@
     </head>
     <body>
         <div id="app">
-            <div @click="nodechanges">
-                <h2>OwO</h2>
-            </div>
-            <div v-if="status.newnode">
-                <form @submit.prevent="submitForm">
-                    <input type="text" id="node" v-model="formData.node" placeholder="node" required>
-                    <input type="text" id="workdir" v-model="formData.workdir" placeholder="workdir" required>
-                    <div v-for="(arg, index) in formData.args" :key="index">
-                        <input type="text" v-model="formData.args[index]" placeholder="args" required>
-                        <button type="button" @click="removeArg(index)">remove args</button>
-                        <br>
+            <div class="app-container">
+                <div class="sidebar">
+                    <div class="node-container">
+                        <h2 class="nodelist-title">Node-List</h2>
+                        <div @click="nodechanges" class="plus-icon">+</div>
                     </div>
-                    <button type="button" @click="addArg">add args</button>
-                    <br><br>
-                    <button type="submit">upload</button>
-                </form>
-            </div>
-            <div v-else>
-                <div v-if="node.config && node.running">
-                    <p>Config: {{ node.config }}</p>
-                    <p>Running: {{ node.running }}</p>
-                </div>
-                <div v-if="node.config && node.running && Object.keys(node.config).length != 0" class="sidebar">
-                    <div v-for="(row, i) in node.config">
-                        <div v-if="Object.keys(node.running).length != 0">
-                            <div v-for="(row2, i2) in node.running">
-                                <li v-if="row2.status.id == row.id && row2.processInfo.pid != -1" @click="nodestop(row.id)" class="stop-node">
-                                    {{row.id}} ({{row.node}}) [stop] <{{node.running[row.id].processInfo.pid}}>
-                                </li>
-                                <li v-else @click="nodestart(row.id)" class="start-node">
-                                    {{row.id}} ({{row.node}}) [start]
+                    <div class="controll">
+                        <div v-if="node.config && node.running && Object.keys(node.config).length != 0">
+                            <div v-for="(row, i) in node.config" :key="i">
+                                <div v-if="Object.keys(node.running).length != 0">
+                                    <div v-for="(row2, i2) in node.running" :key="i2">
+                                        <li v-if="row2.status.id == row.id && row2.processInfo.pid != -1"
+                                            @click="view_choice_node(row.id)" class="stop-node">
+                                            <div v-if="node.view == row.id" class="choice-node">
+                                                {{row.id}} ({{row.node}}) status: run <{{row2.processInfo.pid}}>
+                                            </div>
+                                            <div v-else>
+                                                {{row.id}} ({{row.node}}) status: run <{{row2.processInfo.pid}}>
+                                            </div>
+                                        </li>
+                                        <li v-else @click="view_choice_node(row.id)" class="start-node">
+                                            <div v-if="node.view == row.id" class="choice-node">
+                                                {{row.id}} ({{row.node}}) status: stop
+                                            </div>
+                                            <div v-else>
+                                                {{row.id}} ({{row.node}}) status: stop
+                                            </div>
+                                        </li>
+                                    </div>
+                                </div>
+                                <li v-else @click="view_choice_node(row.id)" class="start-node">
+                                    <div v-if="node.view == row.id" class="choice-node">
+                                        {{row.id}} ({{row.node}}) status: stop
+                                    </div>
+                                    <div v-else>
+                                        {{row.id}} ({{row.node}}) status: stop
+                                    </div>
                                 </li>
                             </div>
                         </div>
-                        <li v-else @click="nodestart(row.id)" class="start-node">
-                            {{row.id}} ({{row.node}}) [start]
-                        </li>
+
+                    </div>
+                </div>
+                <div v-if="status.newnode" class="make-node">
+                    <form @submit.prevent="submitForm">
+                        <input type="text" id="node" v-model="formData.node" placeholder="node" required>
+                        <input type="text" id="workdir" v-model="formData.workdir" placeholder="workdir" required>
+                        <div v-for="(arg, index) in formData.args" :key="index">
+                            <input type="text" v-model="formData.args[index]" placeholder="args" required>
+                            <button type="button" @click="removeArg(index)">remove args</button>
+                            <br>
+                        </div>
+                        <button type="button" @click="addArg">add args</button>
+                        <br><br>
+                        <button type="submit">upload</button>
+                    </form>
+                </div>
+                <div class="node-info" v-if="node.config && node.running">
+                    <div v-if="Object.keys(node.config).length != 0">
+                        <div>
+                            <h2 v-if="(node.view in node.running) && node.running[node.view].processInfo.pid != -1" @click="nodestop(node.view)">STOP</h2>
+                            <h2 v-else @click="nodestart(node.view)">START</h2>
+                        </div>
+                        <h2>{{node.config[node.view].node}} {{node.config[node.view].path}} {{node.config[node.view].args.join(' ')}}</h2>
+                        <div v-if="(node.view in node.running)">
+                            <p>PID : {{node.running[node.view].processInfo.pid}}</p>
+                        </div>
+                        <pre>{{node.log}}</pre>
                     </div>
                 </div>
             </div>
