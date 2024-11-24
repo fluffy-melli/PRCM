@@ -33,6 +33,9 @@ new Vue({
             this.loadnodes()
         }, 2000)
     },
+    beforeDestroy() {
+        window.removeEventListener('resize', this.resizeChart)
+    },
     methods: {
         async loadnodes() {
             const response1 = await axios.get('/api/get-config')
@@ -136,7 +139,9 @@ new Vue({
                     },
                     animation: {
                         duration: 0
-                    }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
                 }
             })
         }

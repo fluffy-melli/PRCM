@@ -36,19 +36,27 @@ fun run(processInfo: Builder) : Int {
             processInfo.status.exit = false
             var line: String?
             val process = processBuilder.start()
+            var time = getTime()
+            val startLogger = "[$time] ${processInfo.node.node} ${processInfo.node.filepath} ${processInfo.node.args.joinToString(" ")} ERR:[${processInfo.status.errCount}/10] PID:${PID(process)}"
+            logList[processInfo.status.id]?.append(startLogger)?.append("\n")
             nodeList[processInfo.status.id] = processInfo
             processlist[processInfo.status.id] = process
             processInfo.processInfo.pid = PID(process)
             val standardOutputReader = BufferedReader(InputStreamReader(process.inputStream, "UTF-8"))
             while (standardOutputReader.readLine().also { line = it } != null) {
-                logList[processInfo.status.id]?.append(line)?.append("\n")
+                time = getTime()
+                logList[processInfo.status.id]?.append("[$time] $line")?.append("\n")
             }
             val errorOutputReader = BufferedReader(InputStreamReader(process.errorStream, "UTF-8"))
             while (errorOutputReader.readLine().also { line = it } != null) {
-                logList[processInfo.status.id]?.append(line)?.append("\n")
+                time = getTime()
+                logList[processInfo.status.id]?.append("[$time] $line")?.append("\n")
             }
             memoryUsageList[processInfo.status.id]?.plus(MemoryUsage(processInfo.processInfo.pid))
             val exit = process.waitFor()
+            time = getTime()
+            val endLogger = "[$time] Exit: $exit"
+            logList[processInfo.status.id]?.append(endLogger)?.append("\n")
             processInfo.status.endTime = Instant.now().epochSecond
             processInfo.status.exit = true
             processInfo.status.exitCode = exit

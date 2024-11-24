@@ -71,16 +71,19 @@
                 </div>
                 <div class="node-info" v-if="node.config && node.running">
                     <div v-if="Object.keys(node.config).length != 0">
-                        <canvas class="chart-usage-memory" id="chart-usage-memory"></canvas>
-                        <div>
-                            <h2 v-if="(node.view in node.running) && node.running[node.view].processInfo.pid != -1" @click="nodestop(node.view)">STOP</h2>
-                            <h2 v-else @click="nodestart(node.view)">START</h2>
+                        <div class="chart">
+                            <canvas class="chart-usage-memory" id="chart-usage-memory"></canvas>
                         </div>
-                        <h2>{{node.config[node.view].node}} {{node.config[node.view].path}} {{node.config[node.view].args.join(' ')}}</h2>
-                        <div v-if="(node.view in node.running)">
-                            <p>PID : {{node.running[node.view].processInfo.pid}}</p>
+                        <div class="toggle">
+                            <div class="command">
+                                <h2 v-if="(node.view in node.running) && node.running[node.view].processInfo.pid != -1" @click="nodestop(node.view)">STOP</h2>
+                                <h2 v-else @click="nodestart(node.view)">START</h2>
+                                <p v-if="(node.view in node.running)">PID : {{node.running[node.view].processInfo.pid}}</p>
+                            </div>
+                            <div class="log">
+                                <pre>{{node.log}}</pre>
+                            </div>
                         </div>
-                        <pre>{{node.log}}</pre>
                     </div>
                 </div>
             </div>
