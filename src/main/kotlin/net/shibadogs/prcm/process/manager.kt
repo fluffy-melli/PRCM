@@ -38,7 +38,6 @@ fun run(processInfo: Builder) : Int {
             val process = processBuilder.start()
             nodeList[processInfo.status.id] = processInfo
             processlist[processInfo.status.id] = process
-            memoryUsageList[processInfo.status.id] = listOf()
             processInfo.processInfo.pid = PID(process)
             val standardOutputReader = BufferedReader(InputStreamReader(process.inputStream, "UTF-8"))
             while (standardOutputReader.readLine().also { line = it } != null) {
@@ -58,7 +57,6 @@ fun run(processInfo: Builder) : Int {
             }
             processInfo.status.restartCount += 1
         }
-        memoryUsageList.remove(processInfo.status.id)
         processlist.remove(processInfo.status.id)
         nodeList.remove(processInfo.status.id)
     } catch (e: Exception) {
@@ -71,7 +69,6 @@ fun stop(processInfo: Builder) : Boolean{
     if (!processInfo.status.exit) {
         processInfo.status.rootExit = true
         processlist[processInfo.status.id]?.destroyForcibly()
-        memoryUsageList.remove(processInfo.status.id)
         processlist.remove(processInfo.status.id)
         nodeList.remove(processInfo.status.id)
         return true

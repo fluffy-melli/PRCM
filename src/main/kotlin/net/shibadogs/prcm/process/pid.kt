@@ -20,15 +20,13 @@ fun PID_INFO(pid: Long): OSProcess? {
     return null
 }
 
-fun MemoryUsage(pid: Long): Map<Int, Long> {
+fun MemoryUsage(pid: Long): Long {
     val process = PID_INFO(pid)
-    val result: MutableMap<Int, Long> = mutableMapOf()
+    val result: Long
     if (process == null) {
-        result[0] = 0
-        result[1] = 0
+        result = 0
     } else {
-        result[0] = process.virtualSize
-        result[1] = process.residentSetSize
+        result = process.residentSetSize
     }
     return result
 }

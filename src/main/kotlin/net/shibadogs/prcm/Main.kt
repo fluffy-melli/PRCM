@@ -2,6 +2,7 @@ package net.shibadogs.prcm
 
 import net.shibadogs.prcm.command.command
 import net.shibadogs.prcm.command.run
+import net.shibadogs.prcm.process.flow.newFlow
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
@@ -13,4 +14,5 @@ fun main(args: Array<String>) {
     println("Load: $currentDir...")
     run(command(args))
     runApplication<PRCMServer>()
+    newFlow()
 }

@@ -50,12 +50,16 @@ class Router {
         return stop(nodeList[number]!!)
     }
 
-    @GetMapping("/api/node/usage/memory/{number}")
-    fun usageMemoryNode(@PathVariable number: Int): List<Map<Int, Long>> {
+    @GetMapping("/api/node/usage/{number}")
+    fun usageMemoryNode(@PathVariable number: Int): MutableMap<String, Any> {
+        val respond: MutableMap<String, Any> = mutableMapOf()
+        respond["label"] = label
         if (memoryUsageList.getOrElse(number) { null } == null) {
-            return listOf()
+            respond["usage-memory"] = MutableList(20) {0}
+        } else {
+            respond["usage-memory"] = memoryUsageList[number]!!
         }
-        return memoryUsageList[number]!!
+        return respond
     }
 
     @PostMapping("/api/new-config")

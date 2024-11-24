@@ -12,12 +12,19 @@ new Vue({
             running: null,
             view: 0,
             log: "",
+            _debug: {
+                label: [],
+                memory: []
+            },
         },
         formData: {
             file: '',
             node: '',
             workdir: '',
             args: []
+        },
+        chart: {
+            memory: null
         }
     },
     mounted() {
@@ -34,6 +41,10 @@ new Vue({
             this.node.running = response2.data
             const response3 = await axios.get('/api/node/get-log/'+this.node.view)
             this.node.log = response3.data
+            const response4 = await axios.get('/api/node/usage/'+this.node.view)
+            this.node._debug.memory = response4.data["usage-memory"]
+            this.node._debug.label = response4.data["label"]
+            this.draw_memory_chart()
         },
         async nodestart(id) {
             const response = await axios.get('/api/node/start/'+id)
@@ -63,8 +74,6 @@ new Vue({
             this.formData.args.splice(0, 1)
             axios.post('/api/new-config', this.formData)
                 .then(response => {
-                    console.log('서버 응답:', response.data)
-                    alert('폼 제출 성공')
                     this.loadnodes()
                 })
                 .catch(error => {
@@ -82,6 +91,54 @@ new Vue({
         },
         removeArg(index) {
             this.formData.args.splice(index, 1)
+        },
+        draw_memory_chart() {
+            if (this.chart.memory != null) {
+                this.chart.memory.data.labels = this.node._debug.label
+                this.chart.memory.data.datasets[0].data = this.node._debug.memory
+                this.chart.memory.update()
+                return
+            }
+            const ctx = document.getElementById('chart-usage-memory').getContext('2d')
+            this.chart.memory = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: this.node._debug.label,
+                    datasets: [{
+                        label: 'Usage Memory',
+                        data: this.node._debug.memory,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            position: 'bottom'
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 1073741824) { // 1024 * 1024 * 1024
+                                        return (value / 1073741824).toFixed(2) + ' GB';
+                                    } else if (value >= 1048576) { // 1024 * 1024
+                                        return (value / 1048576).toFixed(2) + ' MB';
+                                    } else if (value >= 1024) {
+                                        return (value / 1024).toFixed(2) + ' KB';
+                                    } else {
+                                        return value + ' Bytes';
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 0
+                    }
+                }
+            })
         }
     }
 })

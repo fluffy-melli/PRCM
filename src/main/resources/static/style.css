@@ -37,6 +37,15 @@ body {
     background-color: #f4f4f4;
     padding: 20px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: row;
+    lign-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.node-info h2 {
+    margin-right: 20px;
 }
 
 .node-container {
@@ -73,4 +82,11 @@ body {
 
 .plus-icon:hover {
     background-color: rgb(66, 155, 71);
+}
+
+.chart-usage-memory {
+    position: relative;
+    width: 95%;
+    height: 300px;
+    top: 0px;
 }

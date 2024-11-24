@@ -6,6 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>PRCM</title>
         <link rel="stylesheet" href="style.css">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     </head>
@@ -70,6 +71,7 @@
                 </div>
                 <div class="node-info" v-if="node.config && node.running">
                     <div v-if="Object.keys(node.config).length != 0">
+                        <canvas class="chart-usage-memory" id="chart-usage-memory"></canvas>
                         <div>
                             <h2 v-if="(node.view in node.running) && node.running[node.view].processInfo.pid != -1" @click="nodestop(node.view)">STOP</h2>
                             <h2 v-else @click="nodestart(node.view)">START</h2>
