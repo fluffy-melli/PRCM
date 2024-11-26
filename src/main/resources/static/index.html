@@ -32,7 +32,7 @@
                                                 {{row.id}} ({{row.node}}) status: run <{{row2.processInfo.pid}}>
                                             </div>
                                         </li>
-                                        <li v-else @click="view_choice_node(row.id)" class="start-node">
+                                        <li v-else-if="row2.status.id == row.id" @click="view_choice_node(row.id)" class="start-node">
                                             <div v-if="node.view == row.id" class="choice-node">
                                                 {{row.id}} ({{row.node}}) status: stop
                                             </div>
