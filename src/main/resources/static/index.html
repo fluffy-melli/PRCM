@@ -19,40 +19,42 @@
                         <div @click="nodechanges" class="plus-icon">+</div>
                     </div>
                     <div class="controll">
-                        <div v-if="node.config && node.running && Object.keys(node.config).length != 0">
+                        <div v-if="Object.keys(node.config).length != 0">
                             <div v-for="(row, i) in node.config" :key="i">
                                 <div v-if="Object.keys(node.running).length != 0">
-                                    <div v-for="(row2, i2) in node.running" :key="i2">
-                                        <li v-if="row2.status.id == row.id && row2.processInfo.pid != -1"
-                                            @click="view_choice_node(row.id)" class="stop-node">
-                                            <div v-if="node.view == row.id" class="choice-node">
-                                                {{row.id}} ({{row.node}}) status: run <{{row2.processInfo.pid}}>
-                                            </div>
-                                            <div v-else>
-                                                {{row.id}} ({{row.node}}) status: run <{{row2.processInfo.pid}}>
-                                            </div>
+                                    <div v-if="Object.keys(node.running).some(key => node.running[key].status.id == row.id)"
+                                         @click="view_choice_node(row.id)"
+                                         :class="{'stop-node': node.running[row.id]?.processInfo.pid == -1, 'start-node': node.running[row.id]?.processInfo.pid != -1}">
+                                        <li v-if="node.view == row.id" class="choice-node">
+                                            {{ row.id }} ({{ row.node }}) status: {{ node.running[row.id]?.processInfo.pid != -1 ? 'run' : 'stop' }} <{{ node.running[row.id]?.processInfo.pid }}>
                                         </li>
-                                        <li v-else-if="row2.status.id == row.id" @click="view_choice_node(row.id)" class="start-node">
+                                        <li v-else>
+                                            {{ row.id }} ({{ row.node }}) status: {{ node.running[row.id]?.processInfo.pid != -1 ? 'run' : 'stop' }} <{{ node.running[row.id]?.processInfo.pid }}>
+                                        </li>
+                                    </div>
+                                    <div v-else>
+                                        <li @click="view_choice_node(row.id)" class="start-node">
                                             <div v-if="node.view == row.id" class="choice-node">
-                                                {{row.id}} ({{row.node}}) status: stop
+                                                {{ row.id }} ({{ row.node }}) status: stop
                                             </div>
                                             <div v-else>
-                                                {{row.id}} ({{row.node}}) status: stop
+                                                {{ row.id }} ({{ row.node }}) status: stop
                                             </div>
                                         </li>
                                     </div>
                                 </div>
-                                <li v-else @click="view_choice_node(row.id)" class="start-node">
-                                    <div v-if="node.view == row.id" class="choice-node">
-                                        {{row.id}} ({{row.node}}) status: stop
-                                    </div>
-                                    <div v-else>
-                                        {{row.id}} ({{row.node}}) status: stop
-                                    </div>
-                                </li>
+                                <div v-else>
+                                    <li @click="view_choice_node(row.id)" class="start-node">
+                                        <div v-if="node.view == row.id" class="choice-node">
+                                            {{ row.id }} ({{ row.node }}) status: stop
+                                        </div>
+                                        <div v-else>
+                                            {{ row.id }} ({{ row.node }}) status: stop
+                                        </div>
+                                    </li>
+                                </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
                 <div v-if="status.newnode" class="make-node">
