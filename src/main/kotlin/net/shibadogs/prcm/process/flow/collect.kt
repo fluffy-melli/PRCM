@@ -17,9 +17,8 @@ fun useMemory() {
             val pid = (nodeList[i.value.id]!!).processInfo.pid
             memoryUsageList[i.value.id]?.add(MemoryUsage(pid))
         }
-        if (memoryUsageList[i.value.id]?.size!! >= 20) {
-            memoryUsageList[i.value.id]?.subList(0, memoryUsageList[i.value.id]?.size!! - 20)?.clear()
+        if (memoryUsageList[i.value.id]?.size ?: 0 >= 20) {
+            memoryUsageList[i.value.id]?.subList(0, memoryUsageList[i.value.id]!!.size - 20)?.clear()
         }
-        return
     }
 }
