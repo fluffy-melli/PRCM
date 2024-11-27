@@ -120,6 +120,13 @@ body {
     background-color: rgb(66, 155, 71);
 }
 
+.config-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+}
+
 .green {}
 
 .red {}

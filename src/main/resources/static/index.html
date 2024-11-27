@@ -58,7 +58,7 @@
                     </div>
                 </div>
                 <div v-if="status.newnode" class="make-node">
-                    <form @submit.prevent="submitForm">
+                    <form @submit.prevent="status.edit ? submit_edit_config(node.config) : submitForm()">
                         <input type="text" id="node" v-model="formData.node" placeholder="node" required>
                         <input type="text" id="workdir" v-model="formData.workdir" placeholder="workdir" required>
                         <div v-for="(arg, index) in formData.args" :key="index">
@@ -73,6 +73,10 @@
                 </div>
                 <div class="node-info" v-if="node.config && node.running">
                     <div v-if="Object.keys(node.config).length != 0">
+                        <div class="config-container">
+                            <p @click="submit_del_config(node.view)">DEL NODE</p>
+                            <p @click="load_edit_config(node.view)">DEIT NODE</p>
+                        </div>
                         <div class="chart">
                             <canvas class="chart-usage-memory" id="chart-usage-memory"></canvas>
                         </div>

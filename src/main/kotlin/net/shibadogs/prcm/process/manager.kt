@@ -1,5 +1,8 @@
 package net.shibadogs.prcm.process
 
+import net.shibadogs.prcm.save.Config
+import net.shibadogs.prcm.save.loadxml
+import net.shibadogs.prcm.save.savexml
 import net.shibadogs.prcm.server.logList
 import net.shibadogs.prcm.server.memoryUsageList
 import net.shibadogs.prcm.server.nodeList
@@ -42,17 +45,24 @@ fun run(processInfo: Builder) : Int {
             nodeList[processInfo.status.id] = processInfo
             processlist[processInfo.status.id] = process
             processInfo.processInfo.pid = PID(process)
-            val standardOutputReader = BufferedReader(InputStreamReader(process.inputStream, "UTF-8"))
-            while (standardOutputReader.readLine().also { line = it } != null) {
-                time = getTime()
-                logList[processInfo.status.id]?.append("[$time] $line")?.append("\n")
+            val outReader = Thread {
+                val standardOutputReader = BufferedReader(InputStreamReader(process.inputStream, "UTF-8"))
+                while (standardOutputReader.readLine().also { line = it } != null) {
+                    time = getTime()
+                    logList[processInfo.status.id]?.append("[$time] $line")?.append("\n")
+                }
             }
-            val errorOutputReader = BufferedReader(InputStreamReader(process.errorStream, "UTF-8"))
-            while (errorOutputReader.readLine().also { line = it } != null) {
-                time = getTime()
-                logList[processInfo.status.id]?.append("[$time] $line")?.append("\n")
+            val errReader = Thread {
+                val errorOutputReader = BufferedReader(InputStreamReader(process.errorStream, "UTF-8"))
+                while (errorOutputReader.readLine().also { line = it } != null) {
+                    time = getTime()
+                    logList[processInfo.status.id]?.append("[$time] $line")?.append("\n")
+                }
             }
-            memoryUsageList[processInfo.status.id]?.plus(MemoryUsage(processInfo.processInfo.pid))
+            outReader.start()
+            errReader.start()
+            outReader.join()
+            errReader.join()
             val exit = process.waitFor()
             time = getTime()
             val endLogger = "[$time] Exit: $exit"
@@ -73,7 +83,7 @@ fun run(processInfo: Builder) : Int {
     return processInfo.status.exitCode
 }
 
-fun stop(processInfo: Builder) : Boolean{
+fun stop(processInfo: Builder) : Boolean {
     if (!processInfo.status.exit) {
         processInfo.status.rootExit = true
         processlist[processInfo.status.id]?.destroyForcibly()
@@ -82,4 +92,45 @@ fun stop(processInfo: Builder) : Boolean{
         return true
     }
     return false
+}
+
+fun del(id: Int) : Boolean {
+    val Configs = loadxml("configs.xml")
+    if (Configs.getOrElse(id) { null } == null) {
+        return false
+    }
+    if (nodeList.getOrElse(id) { null } != null) {
+        stop(nodeList[id]!!)
+        nodeList.remove(id)
+    }
+    Configs.remove(id)
+    savexml(Configs, "configs.xml")
+
+    logList.remove(id)
+    memoryUsageList.remove(id)
+    return true
+}
+
+fun add(id: Int, config: Config) : Boolean {
+    val Configs = loadxml("configs.xml")
+    Configs[id] = config
+    savexml(Configs, "configs.xml")
+    return true
+}
+
+fun edit(id: Int, config: Config) : Boolean {
+    val Configs = loadxml("configs.xml")
+    if (Configs.getOrElse(id) { null } == null) {
+        return false
+    }
+    if (nodeList.getOrElse(id) { null } != null) {
+        stop(nodeList[id]!!)
+        nodeList.remove(id)
+    }
+    Configs[id] = config
+    savexml(Configs, "configs.xml")
+
+    logList.remove(id)
+    memoryUsageList.remove(id)
+    return true
 }

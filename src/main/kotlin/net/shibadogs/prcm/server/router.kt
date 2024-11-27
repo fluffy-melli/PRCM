@@ -1,12 +1,8 @@
 package net.shibadogs.prcm.server
 
-import net.shibadogs.prcm.process.Builder
-import net.shibadogs.prcm.process.new
-import net.shibadogs.prcm.process.run
-import net.shibadogs.prcm.process.stop
+import net.shibadogs.prcm.process.*
 import net.shibadogs.prcm.save.Config
 import net.shibadogs.prcm.save.loadxml
-import net.shibadogs.prcm.save.savexml
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -63,7 +59,7 @@ class Router {
     }
 
     @PostMapping("/api/new-config")
-    fun newConfig (@RequestBody body: Map<String, Any>): MutableMap<Int, Config> {
+    fun newConfig (@RequestBody body: Map<String, Any>): Boolean {
         val loadConfigs = loadxml("configs.xml")
         val args: List<String> = (body["args"] as? List<*>)?.filterIsInstance<String>() ?: listOf()
         val config = Config(
@@ -73,8 +69,24 @@ class Router {
             body["file"] as String,
             args
         )
-        loadConfigs[loadConfigs.size] = config
-        savexml(loadConfigs, "configs.xml")
-        return loadConfigs
+        return add(loadConfigs.size, config)
+    }
+
+    @PostMapping("/api/edit-config")
+    fun editConfig (@RequestBody body: Map<String, Any>): Boolean {
+        val args: List<String> = (body["args"] as? List<*>)?.filterIsInstance<String>() ?: listOf()
+        val config = Config(
+            body["id"] as Int,
+            body["node"] as String,
+            body["workdir"] as String,
+            body["file"] as String,
+            args
+        )
+        return edit(body["id"] as Int, config)
+    }
+
+    @PostMapping("/api/del-config")
+    fun delConfig (@RequestBody body: Map<String, Any>): Boolean {
+        return del(body["id"] as Int)
     }
 }

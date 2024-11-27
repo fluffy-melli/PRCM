@@ -5,7 +5,8 @@ new Vue({
     data: {
         status: {
             node: true,
-            newnode: false
+            newnode: false,
+            edit: false,
         },
         node: {
             config: null,
@@ -71,12 +72,15 @@ new Vue({
         nodechanges() {
             this.status.node = !this.status.node
             this.status.newnode = !this.status.newnode
+            this.status.edit = false
         },
         submitForm() {
             this.formData.file = this.formData.args[0]
             this.formData.args.splice(0, 1)
             axios.post('/api/new-config', this.formData)
                 .then(response => {
+                    this.status.edit = false
+                    this.status.newnode = false
                     this.loadnodes()
                 })
                 .catch(error => {
@@ -88,6 +92,52 @@ new Vue({
                 workdir: '',
                 args: []
             }
+        },
+        submit_del_config(id) {
+            axios.post('/api/del-config', {"id":id})
+                .then(response => {
+                    this.loadnodes()
+                })
+                .catch(error => {
+                    alert('fail')
+                })
+        },
+        async load_edit_config(id) {
+            if (this.status.edit) {
+                this.status.edit = false
+                this.status.newnode = false
+                return
+            }
+            const config = (await axios.get('/api/get-config')).data
+            if (!(id in config)) {
+                alert('fail')
+                return
+            }
+            this.formData = {
+                id: id,
+                file: config[id]?.path,
+                node: config[id]?.node,
+                workdir: config[id]?.workdir,
+                args: config[id]?.args ?? []
+            }
+            this.status.edit = true
+            this.status.newnode = true
+        },
+        async submit_edit_config(id) {
+            axios.post('/api/edit-config', this.formData)
+                .then(response => {
+                    this.formData = {
+                        file: '',
+                        node: '',
+                        workdir: '',
+                        args: []
+                    }
+                    this.status.edit = false
+                    this.status.newnode = false
+                })
+                .catch(error => {
+                    alert('fail')
+                })
         },
         addArg() {
             this.formData.args.push('')
