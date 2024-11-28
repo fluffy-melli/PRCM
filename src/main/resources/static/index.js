@@ -34,9 +34,6 @@ new Vue({
             this.loadnodes()
         }, 2000)
     },
-    beforeDestroy() {
-        window.removeEventListener('resize', this.resizeChart)
-    },
     methods: {
         async loadnodes() {
             const response1 = await axios.get('/api/get-config')
@@ -70,13 +67,26 @@ new Vue({
             this.node.view = id
         },
         nodechanges() {
+            this.formData = {
+                file: '',
+                node: '',
+                workdir: '',
+                args: []
+            }
+            if (this.status.edit) {
+                this.status.node = false
+                this.status.newnode = true
+                this.status.edit = false
+                return
+            }
             this.status.node = !this.status.node
             this.status.newnode = !this.status.newnode
-            this.status.edit = false
         },
         submitForm() {
-            this.formData.file = this.formData.args[0]
-            this.formData.args.splice(0, 1)
+            if (this.formData.args.length >= 1) {
+                this.formData.args.splice(0, 1)
+                this.formData.file = this.formData.args[0]
+            }
             axios.post('/api/new-config', this.formData)
                 .then(response => {
                     this.status.edit = false
@@ -106,12 +116,22 @@ new Vue({
             if (this.status.edit) {
                 this.status.edit = false
                 this.status.newnode = false
+                this.formData = {
+                    file: '',
+                    node: '',
+                    workdir: '',
+                    args: []
+                }
                 return
             }
             const config = (await axios.get('/api/get-config')).data
             if (!(id in config)) {
                 alert('fail')
                 return
+            }
+            const args = config[id]?.args ?? []
+            if (config[id]?.path ?? false) {
+                args.unshift(config[id]?.path)
             }
             this.formData = {
                 id: id,
@@ -146,6 +166,9 @@ new Vue({
             this.formData.args.splice(index, 1)
         },
         draw_memory_chart() {
+            if (Object.keys(this.node.config).length == 0) {
+                return
+            }
             if (this.chart.memory != null) {
                 this.chart.memory.data.labels = this.node._debug.label
                 this.chart.memory.data.datasets[0].data = this.node._debug.memory

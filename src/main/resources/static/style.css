@@ -51,10 +51,9 @@ body {
 }
 
 #chart-usage-memory {
-    position: relative;
-    width: 95%;
-    height: 300px;
-    top: 0px;
+     position: relative;
+     width: 100%;
+     height: 300px;
 }
 
 .node-info .toggle {
@@ -125,6 +124,98 @@ body {
     justify-content: space-between;
     gap: 10px;
     width: 100%;
+}
+
+.chart-make-node {
+    position: absolute;
+    top: 20px;
+    left: 650px;
+}
+
+.make-node {
+    width: 300px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+.make-node form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.make-node input[type="text"] {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: border-color 0.3s ease;
+}
+
+.make-node input[type="text"]:focus {
+    border-color: #007BFF;
+    outline: none;
+}
+
+.make-node button {
+    padding: 8px 16px;
+    background-color: #007BFF;
+    color: white;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.make-node button:hover {
+    background-color: #0056b3;
+}
+
+.make-node button[type="button"] {
+    background-color: #727272;
+}
+
+.make-node button[type="button"]:hover {
+    background-color: #FF7F50;
+}
+
+.make-node button[type="button"]:focus {
+    outline: none;
+}
+
+.make-node button[type="button"] {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 5px;
+}
+
+.make-node button[type="button"]:hover {
+    background-color: #FF7F50;
+}
+
+.make-node button[type="submit"] {
+    align-self: flex-start;
+    background-color: #28a745;
+}
+
+.make-node button[type="submit"]:hover {
+    background-color: #218838;
+}
+
+.make-node div[v-for] {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.make-node input[type="text"]:not(:last-child) {
+    margin-bottom: 10px;
+}
+
+.make-node input[type="text"]:hover {
+    border-color: #ccc;
 }
 
 .green {}

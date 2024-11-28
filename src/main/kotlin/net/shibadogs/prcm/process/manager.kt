@@ -18,7 +18,12 @@ fun run(processInfo: Builder) : Int {
     if (logList.getOrElse(processInfo.status.id) { null } == null) {
         logList[processInfo.status.id] = StringBuilder()
     }
-    val processBuilder = ProcessBuilder(processInfo.node.node, processInfo.node.filepath, *processInfo.node.args)
+    val processBuilder: ProcessBuilder
+    if (processInfo.node.filepath == "") {
+        processBuilder = ProcessBuilder(processInfo.node.node, *processInfo.node.args)
+    } else {
+        processBuilder = ProcessBuilder(processInfo.node.node, processInfo.node.filepath, *processInfo.node.args)
+    }
     processBuilder.redirectErrorStream(false)
     val exists: Boolean = processInfo.node.workdir?.exists() ?: false
     if (exists) {
@@ -40,7 +45,12 @@ fun run(processInfo: Builder) : Int {
             var line: String?
             val process = processBuilder.start()
             var time = getTime()
-            val startLogger = "[$time] ${processInfo.node.node} ${processInfo.node.filepath} ${processInfo.node.args.joinToString(" ")} ERR:[${processInfo.status.errCount}/10] PID:${PID(process)}"
+            val startLogger: String
+            if (exists) {
+                startLogger = "[$time] :${processInfo.node.workdir}\$ > ${processInfo.node.node} ${processInfo.node.filepath} ${processInfo.node.args.joinToString(" ")} ERR:[${processInfo.status.errCount}/10] PID:${PID(process)}"
+            } else {
+                startLogger = "[$time] :~\$ > ${processInfo.node.node} ${processInfo.node.filepath} ${processInfo.node.args.joinToString(" ")} ERR:[${processInfo.status.errCount}/10] PID:${PID(process)}"
+            }
             logList[processInfo.status.id]?.append(startLogger)?.append("\n")
             nodeList[processInfo.status.id] = processInfo
             processlist[processInfo.status.id] = process
@@ -65,7 +75,12 @@ fun run(processInfo: Builder) : Int {
             errReader.join()
             val exit = process.waitFor()
             time = getTime()
-            val endLogger = "[$time] Exit: $exit"
+            val endLogger: String
+            if (exists) {
+                endLogger = "[$time] :${processInfo.node.workdir}\$ >  Exit: $exit"
+            } else {
+                endLogger = "[$time] :~\$ > Exit: $exit"
+            }
             logList[processInfo.status.id]?.append(endLogger)?.append("\n")
             processInfo.status.endTime = Instant.now().epochSecond
             processInfo.status.exit = true
