@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>PRCM</title>
         <link rel="stylesheet" href="style.css">
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.0"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     </head>
@@ -20,6 +20,10 @@
                     </div>
                     <div class="controll">
                         <div v-if="Object.keys(node.config).length != 0">
+                            <div>
+                                <li v-if="node.view == 'main'" class="choice-node" @click="view_choice_node('main')">node-info</li>
+                                <li v-else @click="view_choice_node('main')">node-info</li>
+                            </div>
                             <div v-for="(row, i) in node.config" :key="i">
                                 <div v-if="Object.keys(node.running).length != 0">
                                     <div v-if="Object.keys(node.running).some(key => node.running[key].status.id == row.id)"
@@ -74,20 +78,19 @@
                         <button v-else type="submit">upload</button>
                     </form>
                 </div>
-                <div class="node-info" v-if="node.config && node.running">
-                    <div v-if="Object.keys(node.config).length != 0">
+                <div class="node-info" v-if="node.view == 'main'">
+                    <div>
                         <div class="config-container">
-                            <p @click="submit_del_config(node.view)">DEL NODE</p>
-                            <p v-if="(node.view in node.running) && node.running[node.view].processInfo.pid != -1" @click="nodestop(node.view)">STOP</p>
-                            <p v-else @click="nodestart(node.view)">START</p>
-                            <p @click="load_edit_config(node.view)">DEIT NODE</p>
+                            <p @click="allstop()">ALL STOP</p>
+                            <p @click="allstart()">ALL START</p>
+                            <p @click="allrestart()">ALL RESTART</p>
                         </div>
                         <div class="chart">
                             <canvas class="chart-usage-memory" id="chart-usage-memory"></canvas>
                         </div>
                         <div class="chart-make-node">
                             <div v-if="status.newnode && Object.keys(node.config).length != 0" class="make-node">
-                                <form @submit.prevent="status.edit ? submit_edit_config(node.config) : submitForm()">
+                                <form @submit.prevent="submitForm()">
                                     <input type="text" id="workdir" v-model="formData.workdir" placeholder="current working directory">
                                     <input type="text" id="node" v-model="formData.node" placeholder="node (Required)" required>
                                     <div v-for="(arg, index) in formData.args" :key="index">
@@ -99,16 +102,49 @@
                                     <p v-if="formData.workdir != ''">:{{formData.workdir}}$ > {{formData.node}} {{formData.args.join(" ")}}</p>
                                     <p v-else>:~$ > {{formData.node}} {{formData.args.join(" ")}}</p>
                                     <br><br>
-                                    <button v-if="status.edit" type="submit">edit</button>
-                                    <button v-else type="submit">upload</button>
+                                    <button type="submit">upload</button>
                                 </form>
                             </div>
                         </div>
-                        <div class="toggle">
-                            <div class="log">
-                                <pre v-if="(node.view in node.running)">PID : {{node.running[node.view].processInfo.pid}}</pre>
-                                <br>
-                                <pre>{{node.log}}</pre>
+                    </div>
+                </div>
+                <div v-else class="node-info">
+                    <div v-if="node.config && node.running">
+                        <div v-if="Object.keys(node.config).length != 0">
+                            <div class="config-container">
+                                <p @click="submit_del_config(node.view)">DEL NODE</p>
+                                <p v-if="(node.view in node.running) && node.running[node.view].processInfo.pid != -1" @click="nodestop(node.view)">STOP</p>
+                                <p v-else @click="nodestart(node.view)">START</p>
+                                <p @click="load_edit_config(node.view)">DEIT NODE</p>
+                            </div>
+                            <div class="chart">
+                                <canvas class="chart-usage-memory" id="chart-usage-memory"></canvas>
+                            </div>
+                            <div class="chart-make-node">
+                                <div v-if="status.newnode && Object.keys(node.config).length != 0" class="make-node">
+                                    <form @submit.prevent="status.edit ? submit_edit_config(node.config) : submitForm()">
+                                        <input type="text" id="workdir" v-model="formData.workdir" placeholder="current working directory">
+                                        <input type="text" id="node" v-model="formData.node" placeholder="node (Required)" required>
+                                        <div v-for="(arg, index) in formData.args" :key="index">
+                                            <input type="text" v-model="formData.args[index]" placeholder="args" required>
+                                            <button type="button" @click="removeArg(index)">remove args</button>
+                                            <br>
+                                        </div>
+                                        <button type="button" @click="addArg">add args</button>
+                                        <p v-if="formData.workdir != ''">:{{formData.workdir}}$ > {{formData.node}} {{formData.args.join(" ")}}</p>
+                                        <p v-else>:~$ > {{formData.node}} {{formData.args.join(" ")}}</p>
+                                        <br><br>
+                                        <button v-if="status.edit" type="submit">edit</button>
+                                        <button v-else type="submit">upload</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="toggle">
+                                <div class="log">
+                                    <pre v-if="(node.view in node.running)">PID : {{node.running[node.view].processInfo.pid}}</pre>
+                                    <br>
+                                    <pre>{{node.log}}</pre>
+                                </div>
                             </div>
                         </div>
                     </div>

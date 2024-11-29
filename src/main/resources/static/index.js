@@ -11,7 +11,7 @@ new Vue({
         node: {
             config: null,
             running: null,
-            view: 0,
+            view: 'main',
             log: "",
             _debug: {
                 label: [],
@@ -36,16 +36,61 @@ new Vue({
     },
     methods: {
         async loadnodes() {
-            const response1 = await axios.get('/api/get-config')
-            this.node.config = response1.data
-            const response2 = await axios.get('/api/get-run-node')
-            this.node.running = response2.data
-            const response3 = await axios.get('/api/node/get-log/'+this.node.view)
-            this.node.log = response3.data
-            const response4 = await axios.get('/api/node/usage/'+this.node.view)
-            this.node._debug.memory = response4.data["usage-memory"]
-            this.node._debug.label = response4.data["label"]
-            this.draw_memory_chart()
+            const nodeConfig = await axios.get('/api/get-config')
+            this.node.config = nodeConfig.data
+            const runNodeInfo = await axios.get('/api/get-run-node')
+            this.node.running = runNodeInfo.data
+            if (this.node.view != 'main') {
+                const logs = await axios.get('/api/node/get-log/'+this.node.view)
+                this.node.log = logs.data
+                const usage = await axios.get('/api/node/usage/'+this.node.view)
+                this.node._debug.memory = usage.data["usage-memory"]
+                this.node._debug.label = usage.data["label"]
+                this.draw_memory_chart()
+            } else {
+                let label = []
+                let memory = []
+                for (let node of Object.values(this.node.config)) {
+                    const usage = await axios.get('/api/node/usage/'+node.id)
+                    if (node.id == 0) {
+                        memory = usage.data["usage-memory"]
+                        label = usage.data["label"]
+                    } else {
+                        for (j in usage.data["usage-memory"]) {
+                            memory[j] += usage.data["usage-memory"][j]
+                        }
+                    }
+                }
+                this.node._debug.memory = memory
+                this.node._debug.label = label
+                this.draw_memory_chart()
+            }
+        },
+        allstart() {
+            for (let node of Object.values(this.node.config)) {
+                if (node.id in this.node.running) {
+                    continue
+                }
+                this.nodestart(node.id)
+            }
+        },
+        allstop() {
+            for (let node of Object.values(this.node.running)) {
+                this.nodestop(node.status.id)
+            }
+        },
+        async allrestart() {
+            for (let node of Object.values(this.node.running)) {
+                this.nodestop(node.status.id)
+            }
+            setTimeout(() => {
+                for (let node of Object.values(this.node.config)) {
+                    if (node.id in this.node.running) {
+                        continue
+                    }
+                    this.nodestart(node.id)
+                }
+            }, 1000);
         },
         async nodestart(id) {
             const response = await axios.get('/api/node/start/'+id)
@@ -64,7 +109,9 @@ new Vue({
             this.loadnodes()
         },
         view_choice_node(id) {
+            this.chart.memory = null
             this.node.view = id
+            this.loadnodes()
         },
         nodechanges() {
             this.formData = {
@@ -166,9 +213,6 @@ new Vue({
             this.formData.args.splice(index, 1)
         },
         draw_memory_chart() {
-            if (Object.keys(this.node.config).length == 0) {
-                return
-            }
             if (this.chart.memory != null) {
                 this.chart.memory.data.labels = this.node._debug.label
                 this.chart.memory.data.datasets[0].data = this.node._debug.memory
@@ -198,16 +242,34 @@ new Vue({
                             ticks: {
                                 callback: function(value) {
                                     if (value >= 1073741824) { // 1024 * 1024 * 1024
-                                        return (value / 1073741824).toFixed(2) + ' GB';
+                                        return (value / 1073741824).toFixed(2) + ' GB'
                                     } else if (value >= 1048576) { // 1024 * 1024
-                                        return (value / 1048576).toFixed(2) + ' MB';
+                                        return (value / 1048576).toFixed(2) + ' MB'
                                     } else if (value >= 1024) {
-                                        return (value / 1024).toFixed(2) + ' KB';
+                                        return (value / 1024).toFixed(2) + ' KB'
                                     } else {
-                                        return value + ' Bytes';
+                                        return value + ' Bytes'
                                     }
                                 }
                             }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                             callbacks: {
+                                 label: function(tooltipItem) {
+                                     var value = tooltipItem.raw;
+                                     if (value >= 1073741824) {
+                                         return (value / 1073741824).toFixed(2) + ' GB'
+                                     } else if (value >= 1048576) {
+                                         return (value / 1048576).toFixed(2) + ' MB'
+                                     } else if (value >= 1024) {
+                                         return (value / 1024).toFixed(2) + ' KB'
+                                     } else {
+                                          return value + ' Bytes'
+                                     }
+                                 }
+                             }
                         }
                     },
                     animation: {
