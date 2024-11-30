@@ -109,6 +109,7 @@ new Vue({
             this.loadnodes()
         },
         view_choice_node(id) {
+            this.chart.memory.destroy()
             this.chart.memory = null
             this.node.view = id
             this.loadnodes()
@@ -213,7 +214,7 @@ new Vue({
             this.formData.args.splice(index, 1)
         },
         draw_memory_chart() {
-            if (this.chart.memory != null) {
+            if (this.chart.memory) {
                 this.chart.memory.data.labels = this.node._debug.label
                 this.chart.memory.data.datasets[0].data = this.node._debug.memory
                 this.chart.memory.update()
