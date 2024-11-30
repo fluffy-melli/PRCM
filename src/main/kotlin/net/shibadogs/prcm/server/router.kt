@@ -1,6 +1,7 @@
 package net.shibadogs.prcm.server
 
 import net.shibadogs.prcm.process.*
+import net.shibadogs.prcm.process.calculate.percent
 import net.shibadogs.prcm.save.Config
 import net.shibadogs.prcm.save.loadxml
 import org.springframework.web.bind.annotation.*
@@ -15,6 +16,11 @@ class Router {
     @GetMapping("/api/get-config")
     fun getConfig(): MutableMap<Int, Config> {
         return loadxml("configs.xml")
+    }
+
+    @GetMapping("/api/node/status-percent")
+    fun statusNode(): MutableMap<Int, Int> {
+        return percent()
     }
 
     @GetMapping("/api/node/get-log/{number}")

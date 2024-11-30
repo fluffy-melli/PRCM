@@ -17,6 +17,7 @@ new Vue({
                 label: [],
                 memory: []
             },
+            status: null
         },
         formData: {
             file: '',
@@ -29,12 +30,20 @@ new Vue({
         }
     },
     mounted() {
+        this.statusnodes()
         this.loadnodes()
         setInterval(() => {
             this.loadnodes()
         }, 2000)
+        setInterval(() => {
+            this.statusnodes()
+        }, 60000)
     },
     methods: {
+        async statusnodes() {
+            const NodeStatus = await axios.get('/api/node/status-percent')
+            this.node.status = NodeStatus.data
+        },
         async loadnodes() {
             const nodeConfig = await axios.get('/api/get-config')
             this.node.config = nodeConfig.data

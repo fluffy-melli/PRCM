@@ -15,3 +15,10 @@ fun newFlow() {
         }
     }, 0, 5, TimeUnit.SECONDS)
 }
+
+fun newFlowStatus() {
+    val scheduler = Executors.newSingleThreadScheduledExecutor()
+    scheduler.scheduleAtFixedRate({
+        nodeStatus()
+    }, 0, 1, TimeUnit.MINUTES)
+}

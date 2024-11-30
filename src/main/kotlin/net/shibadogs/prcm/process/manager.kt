@@ -3,10 +3,7 @@ package net.shibadogs.prcm.process
 import net.shibadogs.prcm.save.Config
 import net.shibadogs.prcm.save.loadxml
 import net.shibadogs.prcm.save.savexml
-import net.shibadogs.prcm.server.logList
-import net.shibadogs.prcm.server.memoryUsageList
-import net.shibadogs.prcm.server.nodeList
-import net.shibadogs.prcm.server.processlist
+import net.shibadogs.prcm.server.*
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.time.Instant
@@ -123,6 +120,7 @@ fun del(id: Int) : Boolean {
 
     logList.remove(id)
     memoryUsageList.remove(id)
+    statusList.remove(id)
     return true
 }
 
@@ -147,5 +145,6 @@ fun edit(id: Int, config: Config) : Boolean {
 
     logList.remove(id)
     memoryUsageList.remove(id)
+    statusList.remove(id)
     return true
 }

@@ -106,6 +106,12 @@
                                 </form>
                             </div>
                         </div>
+                        <div v-if="Object.keys(node.status).length != 0">
+                            <p class="status-header">Status</p>
+                            <p v-for="[key, value] of Object.entries(node.status)" class="status-item">
+                                <span class="status-key">[{{ key }}]</span> <span class="status-value">{{ value }}%</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
                 <div v-else class="node-info">
@@ -138,6 +144,12 @@
                                         <button v-else type="submit">upload</button>
                                     </form>
                                 </div>
+                            </div>
+                            <div>
+                                <p class="status-header">Status</p>
+                                <p class="status-item">
+                                    <span class="status-key"></span><span class="status-value">{{node.status[node.view]}}%</span>
+                                </p>
                             </div>
                             <div class="toggle">
                                 <div class="log">
