@@ -141,8 +141,8 @@ new Vue({
         },
         submitForm() {
             if (this.formData.args.length >= 1) {
-                this.formData.args.splice(0, 1)
                 this.formData.file = this.formData.args[0]
+                this.formData.args.splice(0, 1)
             }
             axios.post('/api/new-config', this.formData)
                 .then(response => {
